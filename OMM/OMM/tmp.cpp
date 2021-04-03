@@ -1,40 +1,20 @@
+// TODO: Fix this file to account for the separate header and source files; the header file is done.
+// TODO: Write wrapper functions in Save for the functions of its member objects.
+#include "tmp.h"
 #include <algorithm>
 #include <cctype>
 #include <chrono>
-// TODO: Remove the line below if I end up not using std::atoi.
-//#include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <limits>
-#include <map>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <typeinfo>
 #include <utility>
-#include <vector>
 
 using namespace std::string_literals;
 
 namespace omm{
-	// Forward declaration of classes.
-	class Counts;
-	class Chapter;
-	class Entry;
-	class Entries;
-	class Save;
-
-	// Aliases
-	using Chapters = std::vector<Chapter>;
-	using IntVector = std::vector<int>;
-	using StringVector = std::vector<std::string>;
-	using EntryVector = std::vector<Entry>;
-
-	// Forward declaration of functions.
-	bool is_number(std::string const &s, std::string::size_type const index = 0);
-	bool natural_compare(std::string const &l, std::string const &r);
-	std::string trim(std::string const &s);
-
 	// The class that manages a group of counts of entries separated using an element as the standard.
 	class Counts{
 		private:
@@ -97,7 +77,6 @@ namespace omm{
 			// Index for the range symbol.
 			auto ri = chapter.find('~');
 
-			// TODO: Change the stoi to atoi if stoi turns out to be too slow.
 			try{
 				// The given chapter is not a range.
 				if(ri == std::string::npos){
@@ -161,9 +140,9 @@ namespace omm{
 		// Splits the given chapter from the given list of chapters based on the given
 		// pivot chapter located in the given chapter; the pivot chapter is removed.
 		static void split_chapters(Chapters &chapters, Chapter &chapter, Chapter &pivot){
-			// If the leftmost chapter is the pivot chapter....
+			// If the leftmost chapter is the pivot chapter...
 			if(chapter.get_l() == pivot.get_l()){
-				// .... and if the chapter is a single chapter, then remove it.
+				// ... and if the chapter is a single chapter, then remove it.
 				if(chapter.get_r() == pivot.get_l()){
 					chapters.erase(std::find(chapters.cbegin(), chapters.cend(), chapter));
 				}
@@ -285,12 +264,12 @@ namespace omm{
 			}
 		}
 
-		// Wrapper for the subscript operator that accesses the underlying map object.
+		// Overload the subscript operator that accesses the underlying map object.
 		auto &operator[](std::string const &key){
 			return details[key];
 		}
 
-		// Wrapper for at() that accesses the underlying map object.
+		// Overload of at() that accesses the underlying map object.
 		auto const &at(std::string const &key) const{
 			return details.at(key);
 		}
@@ -300,7 +279,7 @@ namespace omm{
 			return details.size();
 		}
 
-		// Add the given chapter to the list of liked or loved chapters depending on the value of isLoved.
+		// Add the given chapter to the list of liked or loved chapters.
 		void add_chapter(std::string &chapter, bool isLoved){
 			// Convert the given chapter into a convenient form.
 			Chapter toadd(std::move(chapter));
@@ -320,7 +299,7 @@ namespace omm{
 			chapters.push_back(std::move(toadd));
 		}
 
-		// Delete the given liked chapter.
+		// Delete the given chapter from the list of liked or loved chapters.
 		void delete_chapter(std::string &chapter, bool isLoved){
 			// Convert the given chapter into a convenient form.
 			Chapter todelete(std::move(chapter));
@@ -349,12 +328,12 @@ namespace omm{
 					}
 				}
 
-				// If the list of chapters has more than one element....
+				// If the list of chapters has more than one element...
 				if(chapters->size() > 1){
-					// .... then sort the list of chapters....
+					// ... then sort the list of chapters...
 					std::sort(chapters->begin(), chapters->end());
 
-					// .... and merge any overlapping ranges of chapters.
+					// ... and merge any overlapping ranges of chapters.
 					for(Chapters::size_type a = 0; a < chapters->size() - 1; a++){
 						if(Chapter::does_overlap((*chapters)[a], (*chapters)[a + 1])){
 							Chapter::merge_chapters((*chapters), (*chapters)[a], (*chapters)[a + 1]);
@@ -793,19 +772,16 @@ namespace omm{
 			return true;
 		}
 
-		// TODO: Write wrapper functions for the ones in the contained classes as necessary.
-				// Wrapper for entries.add_entry() to make it available for use in the save.
+		// Wrapper for entries.add_entry().
 		void add_entry(Entry &&entry){
 			entries.add_entry(std::move(entry));
 		}
 	};
 
-	// Returns true if the given string has a number at the given index, false otherwise.
 	bool is_number(std::string const &s, std::string::size_type const index){
 		return std::isdigit(s[index]) != 0;
 	}
 
-	// Returns true if the left string comes before the right string according to natural ordering, false otherwise.
 	bool natural_compare(std::string const &l, std::string const &r){
 		// If either is empty, comparison is trivial.
 		if(l.empty() || r.empty()){
@@ -828,9 +804,9 @@ namespace omm{
 				return cmpRes < 0;
 			}
 
-			// If the two tokens are lexicographically different....
+			// If the two tokens are lexicographically different...
 			if(cmpRes != 0){
-				// .... and both are numbers of different values, then compare as numbers.
+				// ... and both are numbers of different values, then compare as numbers.
 				if(is_number(l, li) && is_number(r, ri) && std::stoi(l.data() + li) != std::stoi(r.data() + ri)){
 					return std::stoi(l.data() + li) < std::stoi(r.data() + ri);
 				}
@@ -846,7 +822,6 @@ namespace omm{
 		}
 	}
 
-	// Returns a copy of the given string with leading and trailing whitespace removed.
 	std::string trim(std::string const &s){
 		std::string ws(" \f\n\r\t\v");
 		auto li = s.find_first_not_of(ws), ri = s.find_last_not_of(ws);
