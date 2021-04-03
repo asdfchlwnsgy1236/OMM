@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+// Exclusive namespace just in case.
 namespace omm{
 	// Forward declaration of classes.
 	class Counts;
@@ -15,8 +16,8 @@ namespace omm{
 	class Save;
 
 	// Aliases.
-	using Chapters = std::vector<Chapter>;
 	using IntVector = std::vector<int>;
+	using Chapters = std::vector<Chapter>;
 	using StringVector = std::vector<std::string>;
 	using EntryVector = std::vector<Entry>;
 
