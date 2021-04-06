@@ -1,4 +1,4 @@
-// TODO: Write wrapper functions in Save for the functions of its member objects.
+// TODO: Work on getting Qt into this before anything else.
 #include "tmp.h"
 #include <algorithm>
 #include <cctype>
@@ -20,12 +20,20 @@ namespace omm{
 		return counts[key];
 	}
 
-	auto Counts::begin(){
+	auto Counts::begin() noexcept{
 		return counts.begin();
 	}
 
-	auto Counts::end(){
+	auto Counts::end() noexcept{
 		return counts.end();
+	}
+
+	auto Counts::cbegin() const noexcept{
+		return counts.cbegin();
+	}
+
+	auto Counts::cend() const noexcept{
+		return counts.cend();
 	}
 
 	std::string &Counts::to_string_append(std::string &s){
@@ -368,8 +376,8 @@ namespace omm{
 		return s;
 	}
 
-	Save::Save(): id("OMM_"), countTotal(0), countByType("countByType"), countByLanguage("countByLanguage"),
-		countByProgress("countByProgress"), entries(){
+	Save::Save(): id("OMM_"), countTotal(0), countByType("Count by Type"), countByLanguage("Count by Language"),
+		countByProgress("Count by Progress"), entries(){
 		// Initialize id.
 		auto tn = std::chrono::system_clock::now().time_since_epoch();
 		struct std::tm tm{};
@@ -459,7 +467,7 @@ namespace omm{
 
 	std::string &Save::to_string_append(std::string &s){
 		// Build the final serialized string for the save.
-		s.append("{\n\t\"_id\": \"").append(id).append("\",\n\t\"countTotal\": \"")
+		s.append("{\n\t\"_id\": \"").append(id).append("\",\n\t\"Total Count\": \"")
 			.append(std::to_string(countTotal)).append("\",\n");
 		countByType.to_string_append(s).append(",\n");
 		countByLanguage.to_string_append(s).append(",\n");
@@ -615,6 +623,26 @@ namespace omm{
 
 		// Deserialization ended successfully.
 		return true;
+	}
+
+	auto const &Save::gs_id(){
+		return id;
+	}
+
+	auto const &Save::gs_countTotal(){
+		return countTotal;
+	}
+
+	auto &Save::gs_countByType(std::string const & key){
+		return countByType[key];
+	}
+
+	auto &Save::gs_countByLanguage(std::string const & key){
+		return countByLanguage[key];
+	}
+
+	auto &Save::gs_countByProgress(std::string const & key){
+		return countByProgress[key];
 	}
 
 	void Save::add_entry(Entry &&entry){

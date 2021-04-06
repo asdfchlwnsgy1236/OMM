@@ -21,27 +21,6 @@ namespace omm{
 	using StringVector = std::vector<std::string>;
 	using EntryVector = std::vector<Entry>;
 
-	// Overload of the less-than operator that checks the components to compare two chapters.
-	bool operator<(Chapter const &l, Chapter const &r);
-
-	// Overload of equal-to operator that checks the components to compare two chapters.
-	bool operator==(Chapter const &l, Chapter const &r);
-
-	// Overload of the less-than operator that uses natural ordering to compare the title and type of two entries.
-	bool operator<(Entry const &l, Entry const &r);
-
-	// Overload of the equal-to operator that checks the title, type, author, and year for equality of two entries.
-	bool operator==(Entry const &l, Entry const &r);
-
-	// Returns true if the given string has a number at the given index, false otherwise.
-	bool is_number(std::string const &s, std::string::size_type const index = 0);
-
-	// Returns true if the left string comes before the right string according to natural ordering, false otherwise.
-	bool natural_compare(std::string const &l, std::string const &r);
-
-	// Returns a copy of the given string with leading and trailing whitespace removed.
-	std::string trim(std::string const &s);
-
 	// The class that manages a group of counts of entries separated using an element as the standard.
 	class Counts{
 		private:
@@ -57,11 +36,17 @@ namespace omm{
 		// Overload of the subscript operator that accesses the underlying map object.
 		int &operator[](std::string const &key);
 
-		// Wrapper for counts.begin() for iteration.
-		auto begin();
+		// Wrapper for counts.begin() for easy iteration.
+		auto begin() noexcept;
 
-		// Wrapper for counts.end() for iteration.
-		auto end();
+		// Wrapper for counts.end() for easy iteration.
+		auto end() noexcept;
+
+		// Wrapper for counts.cbegin() for easy iteration.
+		auto cbegin() const noexcept;
+
+		// Wrapper for counts.cend() for easy iteration.
+		auto cend() const noexcept;
 
 		// Serialize this group of counts in JSON format and save it to the given string.
 		std::string &to_string_append(std::string &s);
@@ -172,10 +157,10 @@ namespace omm{
 		// Overload of the subscript operator that accesses the underlying vector object.
 		Entry &operator[](EntryVector::size_type const index);
 
-		// Wrapper for entries.begin() for iteration.
+		// Wrapper for entries.begin() for easy iteration.
 		auto begin();
 
-		// Wrapper for entries.end() for iteration.
+		// Wrapper for entries.end() for easy iteration.
 		auto end();
 
 		// Get the number of entries in the list.
@@ -233,9 +218,45 @@ namespace omm{
 		// Deserialize the given save; returns true if successful, false otherwise.
 		bool from_string(std::stringstream &ss);
 
+		// Get/set this save's ID.
+		auto const &gs_id();
+
+		// Get/set this save's total count of all entries.
+		auto const &gs_countTotal();
+
+		// Wrapper for countByType[].
+		auto &gs_countByType(std::string const &key);
+
+		// Wrapper for countByLanguage[].
+		auto &gs_countByLanguage(std::string const &key);
+
+		// Wrapper for countByProgress[].
+		auto &gs_countByProgress(std::string const &key);
+
 		// Wrapper for entries.add_entry().
 		void add_entry(Entry &&entry);
 	};
+
+	// Overload of the less-than operator that checks the components to compare two chapters.
+	bool operator<(Chapter const &l, Chapter const &r);
+
+	// Overload of equal-to operator that checks the components to compare two chapters.
+	bool operator==(Chapter const &l, Chapter const &r);
+
+	// Overload of the less-than operator that uses natural ordering to compare the title and type of two entries.
+	bool operator<(Entry const &l, Entry const &r);
+
+	// Overload of the equal-to operator that checks the title, type, author, and year for equality of two entries.
+	bool operator==(Entry const &l, Entry const &r);
+
+	// Returns true if the given string has a number at the given index, false otherwise.
+	bool is_number(std::string const &s, std::string::size_type const index = 0);
+
+	// Returns true if the left string comes before the right string according to natural ordering, false otherwise.
+	bool natural_compare(std::string const &l, std::string const &r);
+
+	// Returns a copy of the given string with leading and trailing whitespace removed.
+	std::string trim(std::string const &s);
 }
 
 #endif // !_TMP_
