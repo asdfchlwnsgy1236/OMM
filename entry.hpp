@@ -6,17 +6,13 @@
 #include "chapters.hpp"
 #include "util.hpp"
 
-// Exclusive namespace just in case.
+// Exclusive namespace for the OMM.
 namespace omm {
 	// Alias.
 	using StringVector = std::vector<std::string>;
 
 	// Enum for choosing which list of chapters to target.
-	enum class ChapterList : int
-	{
-		liked,
-		loved
-	};
+	enum class ChapterList : int { liked, loved };
 
 	// The class that manages an entry.
 	class Entry {
@@ -29,8 +25,8 @@ namespace omm {
 		Chapters lovedChapters;
 
 		public:
-		// Default constructor to initialize the necessary elements.
-		Entry(): details(), likedChapters(), lovedChapters() {
+		// Default constructor that initializes the necessary elements to their default states.
+		Entry(): details(), likedChapters("Liked Chapters"), lovedChapters("Loved Chapters") {
 			// Fill the details map with the default elements.
 			StringVector keys{"Title", "Original Title", "Franchise/Series", "Franchise/Series Order", "Author", "Year", "Type",
 					"Language", "Rating", "Progress", "Notes"};
@@ -70,18 +66,18 @@ namespace omm {
 			lovedChapters.organize();
 		}
 
-		// Getter for the underlying vector object for the liked chapters of this entry.
-		Chapters &get_likedChapters() {
+		// Getter/setter for the underlying vector object for the liked chapters of this entry.
+		Chapters &gs_likedChapters() {
 			return likedChapters;
 		}
 
-		// Getter for the underlying vector object for the loved chapters of this entry.
-		Chapters &get_lovedChapters() {
+		// Getter/setter for the underlying vector object for the loved chapters of this entry.
+		Chapters &gs_lovedChapters() {
 			return lovedChapters;
 		}
 
 		// Serialize this entry in JSON format and save it to the given string.
-		std::string &to_string_append(std::string &s) {
+		std::string &to_string_append(std::string &s) const {
 			// Serialize the elements as key-value pairs.
 			s.append("\t\t{");
 			for(auto di = details.cbegin(); di != details.cend(); di++) {
@@ -97,6 +93,27 @@ namespace omm {
 			lovedChapters.to_string_append(s).append("]\n\t\t}");
 
 			return s;
+		}
+
+		// Serialize this entry in JSON format using Qt.
+		void to_json(QJsonObject &json) const {
+			for(auto const &a: details) {
+				json[QString::fromStdString(a.first)] = QString::fromStdString(a.second);
+			}
+			likedChapters.to_json(json);
+			lovedChapters.to_json(json);
+		}
+
+		// Reconstruct this entry from JSON data using Qt.
+		void from_json(const QJsonObject &json) {
+			details.clear();
+			for(auto ci = json.constBegin(); ci != json.constEnd(); ++ci) {
+				if(ci.value().isString()) {
+					details[ci.key().toStdString()] = ci.value().toString().toStdString();
+				}
+			}
+			likedChapters.from_json(json);
+			lovedChapters.from_json(json);
 		}
 	};
 

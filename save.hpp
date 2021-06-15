@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QFile>
+#include <QJsonDocument>
 #include <chrono>
 #include <ctime>
 #include <limits>
@@ -9,7 +11,7 @@
 #include "entries.hpp"
 #include "util.hpp"
 
-// Exclusive namespace just in case.
+// Exclusive namespace for the OMM.
 namespace omm {
 	// The class that manages a save of the OMM.
 	class Save {
@@ -28,7 +30,7 @@ namespace omm {
 		Entries entries;
 
 		public:
-		// Default constructor; initializes id using the current time and the counts with the default elements.
+		// Default constructor that initializes id using the current time and the other elements to their default states.
 		Save():
 				id("OMM_"), countTotal(0), countByType("Count by Type"), countByLanguage("Count by Language"),
 				countByProgress("Count by Progress"), entries() {
@@ -126,8 +128,38 @@ namespace omm {
 			entries.sort();
 		}
 
+		// Getter/setter for the ID of this save.
+		auto &gs_id() {
+			return id;
+		}
+
+		// Getter/setter for the total count of all entries in this save.
+		auto &gs_countTotal() {
+			return countTotal;
+		}
+
+		// Getter/setter for the elements in countByType of this save.
+		auto &gs_countByType(std::string const &key) {
+			return countByType[key];
+		}
+
+		// Getter/setter for the elements in countByLanguage of this save.
+		auto &gs_countByLanguage(std::string const &key) {
+			return countByLanguage[key];
+		}
+
+		// Getter/setter for the elements in countByProgress of this save.
+		auto &gs_countByProgress(std::string const &key) {
+			return countByProgress[key];
+		}
+
+		// Wrapper for entries.add_entry().
+		void add_entry(Entry &&entry) {
+			entries.add_entry(std::move(entry));
+		}
+
 		// Serialize this save in JSON format and append it to the given string.
-		std::string &to_string_append(std::string &s) {
+		std::string &to_string_append(std::string &s) const {
 			// Build the final serialized string for the save.
 			s.append("{\n\t\"_id\": \"")
 					.append(id)
@@ -292,34 +324,57 @@ namespace omm {
 			return true;
 		}
 
-		// Get/set the ID of this save.
-		auto &gs_id() {
-			return id;
+		// Serialize this save in JSON format using Qt.
+		void to_json(QJsonObject &json) const {
+			json[QStringLiteral("_ID")] = QString::fromStdString(id);
+			json[QStringLiteral("Count Total")] = static_cast<qint64>(countTotal);
+			countByType.to_json(json);
+			countByLanguage.to_json(json);
+			countByProgress.to_json(json);
+			entries.to_json(json);
 		}
 
-		// Get/set the total count of all entries in this save.
-		auto &gs_countTotal() {
-			return countTotal;
+		// Reconstruct this save from JSON data using Qt.
+		void from_json(const QJsonObject &json) {
+			id = json[QStringLiteral("_ID")].toString().toStdString();
+			countTotal = static_cast<EntryVector::size_type>(json[QStringLiteral("Count Total")].toInteger());
+			countByType.from_json(json);
+			countByLanguage.from_json(json);
+			countByProgress.from_json(json);
+			entries.from_json(json);
 		}
 
-		// Get/set the elements in countByType of this save.
-		auto &gs_countByType(std::string const &key) {
-			return countByType[key];
+		// Save this save to a file.
+		bool save_to() {
+			QFile file(QStringLiteral("omm.json"));
+
+			if(!file.open(QIODevice::WriteOnly)) {
+				qWarning("Could not open save file.");
+
+				return false;
+			}
+
+			QJsonObject saveObject;
+			to_json(saveObject);
+			file.write(QJsonDocument(saveObject).toJson());
+
+			return true;
 		}
 
-		// Get/set the elements in countByLanguage of this save.
-		auto &gs_countByLanguage(std::string const &key) {
-			return countByLanguage[key];
-		}
+		bool load_from() {
+			QFile file(QStringLiteral("omm.json"));
 
-		// Get/set the elements in countByProgress of this save.
-		auto &gs_countByProgress(std::string const &key) {
-			return countByProgress[key];
-		}
+			if(!file.open(QIODevice::ReadOnly)) {
+				qWarning("Could not open save file.");
 
-		// Wrapper for entries.add_entry().
-		void add_entry(Entry &&entry) {
-			entries.add_entry(std::move(entry));
+				return false;
+			}
+
+			QByteArray data = file.readAll();
+			QJsonDocument loadDocument(QJsonDocument::fromJson(data));
+			from_json(loadDocument.object());
+
+			return true;
 		}
 	};
 } // namespace omm

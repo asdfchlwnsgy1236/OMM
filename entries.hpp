@@ -2,7 +2,7 @@
 
 #include "entry.hpp"
 
-// Exclusive namespace just in case.
+// Exclusive namespace for the OMM.
 namespace omm {
 	// Alias.
 	using EntryVector = std::vector<Entry>;
@@ -84,7 +84,7 @@ namespace omm {
 		}
 
 		// Serialize this list of entries in JSON format and save it to the given string.
-		std::string &to_string_append(std::string &s) {
+		std::string &to_string_append(std::string &s) const {
 			// Serialize the name as the key.
 			s.append("\t\"entries\": [");
 
@@ -102,6 +102,29 @@ namespace omm {
 			s.append(1, ']');
 
 			return s;
+		}
+
+		// Serialize this list of entries in JSON format using Qt.
+		void to_json(QJsonObject &json) const {
+			QJsonArray entriesArray;
+			for(auto const &a: entries) {
+				QJsonObject entryObject;
+				a.to_json(entryObject);
+				entriesArray.append(entryObject);
+			}
+			json[QStringLiteral("Entries")] = entriesArray;
+		}
+
+		// Reconstruct this list of entries from JSON data using Qt.
+		void from_json(const QJsonObject &json) {
+			entries.clear();
+			QJsonArray entriesArray = json[QStringLiteral("Entries")].toArray();
+			entries.reserve(entriesArray.size());
+			for(auto const &a: entriesArray) {
+				Entry entry;
+				entry.from_json(a.toObject());
+				entries.push_back(entry);
+			}
 		}
 	};
 } // namespace omm

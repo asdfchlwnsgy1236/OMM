@@ -13,10 +13,12 @@ QT_END_NAMESPACE
 class OMM: public QWidget {
 	Q_OBJECT
 
+	private:
+	Ui::OMM *ui;
+	// The current save file.
+	omm::Save save;
+
 	public:
 	OMM(QWidget *parent = nullptr);
 	~OMM();
-
-	private:
-	Ui::OMM *ui;
 };

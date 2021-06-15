@@ -6,7 +6,7 @@
 
 using namespace std::string_literals;
 
-// Exclusive namespace just in case.
+// Exclusive namespace for the OMM.
 namespace omm {
 	// Returns true if the given string has a number at the given index, false otherwise.
 	bool is_number(std::string const &s, std::string::size_type const index = 0) {

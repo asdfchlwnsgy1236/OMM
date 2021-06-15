@@ -1,10 +1,12 @@
 #pragma once
 
+#include <QJsonArray>
+#include <QJsonObject>
 #include <algorithm>
 
 #include "chapter.hpp"
 
-// Exclusive namespace just in case.
+// Exclusive namespace for the OMM.
 namespace omm {
 	// Alias.
 	using ChapterVector = std::vector<Chapter>;
@@ -12,10 +14,14 @@ namespace omm {
 	// The class that manages a list of chapters.
 	class Chapters {
 		private:
+		// The name of this list of chapters.
+		std::string name;
 		// The vector of chapters that this class manages.
 		ChapterVector chapters;
 
 		public:
+		explicit Chapters(std::string &&_name): name(std::move(_name)), chapters() {}
+
 		// Returns true if the two given chapters overlap, false otherwise.
 		static bool does_overlap(Chapter &c1, Chapter &c2) {
 			return c1.get_l() <= c2.get_r() && c1.get_r() >= c2.get_l();
@@ -118,7 +124,7 @@ namespace omm {
 		}
 
 		// Serialize this list of chapters in JSON format and save it to the given string.
-		std::string &to_string_append(std::string &s) {
+		std::string &to_string_append(std::string &s) const {
 			for(ChapterVector::size_type a = 0; a < chapters.size(); a++) {
 				if(a > 0) {
 					s.append(", ");
@@ -128,6 +134,26 @@ namespace omm {
 			}
 
 			return s;
+		}
+
+		// Serialize this list of chapters in JSON format using Qt.
+		void to_json(QJsonObject &json) const {
+			QJsonArray chaptersArray;
+			for(auto const &a: chapters) {
+				std::string s{};
+				chaptersArray.append(QString::fromStdString(a.to_string_append(s)));
+			}
+			json[QString::fromStdString(name)] = chaptersArray;
+		}
+
+		// Reconstruct this list of chapters from JSON data using Qt.
+		void from_json(const QJsonObject &json) {
+			chapters.clear();
+			QJsonArray chaptersArray = json[QString::fromStdString(name)].toArray();
+			chapters.reserve(chaptersArray.size());
+			for(auto const &a: chaptersArray) {
+				chapters.push_back(Chapter(a.toString().toStdString()));
+			}
 		}
 	};
 } // namespace omm

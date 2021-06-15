@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-// Exclusive namespace just in case.
+// Exclusive namespace for the OMM.
 namespace omm {
 	// Alias.
 	using IntVector = std::vector<int>;
@@ -19,8 +19,7 @@ namespace omm {
 		IntVector r;
 
 		public:
-		// Constructor that takes a chapter in string form and converts it for use.
-		// When construction fails, the Chapter object is empty.
+		// Constructor that takes a chapter in string form and converts it for use; empty upon failure.
 		Chapter(std::string &&chapter): l(), r() {
 			// Index for the range symbol.
 			auto ri = chapter.find('~');
@@ -62,10 +61,10 @@ namespace omm {
 			}
 		}
 
-		// Copy constructor that takes two vectors of integers containing the chapter components.
+		// Constructor that copies the given two vectors of integers containing the chapter components.
 		Chapter(IntVector const &_l, IntVector const &_r): l(_l), r(_r) {}
 
-		// Move constructor that takes two vectors of integers containing the chapter components.
+		// Constructor that moves the given two vectors of integers containing the chapter components.
 		Chapter(IntVector &&_l, IntVector &&_r): l(std::move(_l)), r(std::move(_r)) {}
 
 		// Getter for the left chapter.
@@ -106,7 +105,7 @@ namespace omm {
 		}
 
 		// Serialize this chapter in JSON format and save it to the given string.
-		std::string &to_string_append(std::string &s) {
+		std::string &to_string_append(std::string &s) const {
 			// Separate each component with periods and separate the range with a tilde, if applicable.
 			s.append(std::to_string(l[0]));
 			for(IntVector::size_type a = 1; a < l.size(); a++) {
